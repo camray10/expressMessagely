@@ -73,7 +73,7 @@ class User {
   static async all() {
     try {
       const results = await db.query(
-        `SELECT username, first_name, last_name, phone, last_login_at, join_at FROM users;`);
+        `SELECT username, first_name, last_name, phone FROM users ORDER BY username;`);
       if (!results.rows) {
         throw new ExpressError(`There are zero users found in the DataBase.`);
       }
@@ -117,7 +117,7 @@ class User {
     try {
       const results = await db.query(
         `SELECT m.id, m.body, m.sent_at, m.read_at, m.to_username, u.first_name, u.last_name, u.phone 
-        FROM messages as m JOIN users as u ON m.to_username = u.username
+        FROM messages AS m JOIN users AS u ON m.to_username = u.username
         WHERE m.from_username = $1;`, [username]);
       if (!results.rows[0]) {
         throw new ExpressError(`User not found: ${username}`, 404);
@@ -151,9 +151,9 @@ class User {
   static async messagesTo(username) {
     try {
       const results = await db.query(
-        `SELECT m.id, m.body, m.sent_at, m.read_at, m.to_username, u.first_name, u.last_name, u.phone 
-        FROM messages as m JOIN users as u ON m.to_username = u.username
-        WHERE m.from_username = $1;`, [username]);
+        `SELECT m.id, m.from_username, u.first_name, u.last_name, u.phone, m.body, m.sent_at, m.read_at
+          FROM messages AS m JOIN users AS u ON m.from_username = u.username
+          WHERE to_username = $1`, [username]);
       if (!results.rows[0]) {
         throw new ExpressError(`User not found: ${username}`, 404);
       }
